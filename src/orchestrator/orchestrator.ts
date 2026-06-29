@@ -121,9 +121,29 @@ class Orchestrator {
     });
   }
 
+  /** Đưa toàn hệ về target nhưng BỎ QUA switch đã đúng trạng thái (reconcile) — tuần tự, tránh
+   *  thao tác/center-call thừa. Dùng cho auto-control (khác applyAll vốn ép lại TẤT CẢ cho manual). */
+  applyAllReconcile(target: Target): Promise<ApplyResult[]> {
+    const pending = registry.all().filter((sw) => store.getDesired(sw.id) !== target);
+    if (pending.length === 0) {
+      log.info('orchestrator', `Reconcile ${target.toUpperCase()}: tất cả switch đã đúng trạng thái — bỏ qua.`);
+      return Promise.resolve([]);
+    }
+    return this.enqueue(`${target.toUpperCase()} reconcile ${pending.length} switch (tuần tự)`, async () => {
+      const delay = store.getSettings().delaySwitchMs;
+      const results: ApplyResult[] = [];
+      for (let i = 0; i < pending.length; i++) {
+        const sw = pending[i]!;
+        results.push(target === 'off' ? await this.offSwitch(sw) : await this.onSwitch(sw));
+        if (i < pending.length - 1) await sleep(delay);
+      }
+      return results;
+    });
+  }
+
   /** Thực thi khuyến nghị từ decision engine (chỉ gọi khi autoControl bật). */
   applyRecommendation(rec: 'on' | 'off'): Promise<ApplyResult[]> {
-    return this.applyAll(rec);
+    return this.applyAllReconcile(rec);
   }
 }
 

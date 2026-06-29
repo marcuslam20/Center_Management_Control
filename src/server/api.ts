@@ -4,8 +4,8 @@
 import Fastify, { type FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import { cfg } from '../config.js';
-import { recentAudit } from '../log/audit.js';
-import { store } from '../state/store.js';
+import { log, recentAudit } from '../log/audit.js';
+import { store, type Settings } from '../state/store.js';
 import { registry } from '../switches/registry.js';
 import { PRESET_ROLES } from '../switches/model.js';
 import { poller } from '../price/poller.js';
@@ -94,7 +94,22 @@ export async function buildServer(): Promise<FastifyInstance> {
 
   // ─── Settings ──────────────────────────────────────────────────────────────
   app.get('/api/settings', async () => store.getSettings());
-  app.put('/api/settings', async (req) => store.updateSettings(req.body as Record<string, never>));
+  app.put('/api/settings', async (req) => {
+    const wasAuto = store.getSettings().autoControl;
+    const settings = store.updateSettings((req.body ?? {}) as Partial<Settings>);
+    // Vừa BẬT autoControl → áp dụng NGAY khuyến nghị hiện hành (đừng chờ lần đổi khuyến nghị kế tiếp:
+    // nếu giá đã ổn định qua ngưỡng từ trước, khuyến nghị sẽ không "đổi" lại nên listener không bắn).
+    if (!wasAuto && settings.autoControl) {
+      const rec = decisionEngine.getState().recommendation;
+      if (rec === 'on' || rec === 'off') {
+        log.action('api', `autoControl vừa bật → áp dụng ngay khuyến nghị hiện hành: ${rec.toUpperCase()}`);
+        void orchestrator.applyRecommendation(rec);
+      } else {
+        log.info('api', 'autoControl vừa bật → khuyến nghị hiện là HOLD (chờ giá ổn định qua ngưỡng).');
+      }
+    }
+    return settings;
+  });
 
   // ─── Switch config + discovery (cho trang setup) ───────────────────────────
   app.get('/api/switches', async () =>
