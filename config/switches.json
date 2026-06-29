@@ -1,0 +1,53 @@
+{
+  "_comment": "6 switch (Phase 1). Mỗi switch = 1 preset + gán device_id cho từng vai trò; backend sinh command list on/off. device_id dạng 'env:NAME' sẽ lấy từ biến môi trường. preset: A=cộng lực, B1=cặp đối nhau, B2=riêng lẻ. fireMode: parallel|sequential.",
+  "switches": [
+    {
+      "id": "sw1",
+      "name": "Atomat 1",
+      "minerId": "miner-001",
+      "preset": "A",
+      "fireMode": "parallel",
+      "devices": { "A": "env:DEVICE_A", "B": "env:DEVICE_B" }
+    },
+    {
+      "id": "sw2",
+      "name": "Atomat 2",
+      "minerId": "miner-002",
+      "preset": "A",
+      "fireMode": "parallel",
+      "devices": { "A": "sw2-bot-a", "B": "sw2-bot-b" }
+    },
+    {
+      "id": "sw3",
+      "name": "Atomat 3",
+      "minerId": "miner-003",
+      "preset": "A",
+      "fireMode": "parallel",
+      "devices": { "A": "sw3-bot-a", "B": "sw3-bot-b" }
+    },
+    {
+      "id": "sw4",
+      "name": "Atomat 4",
+      "minerId": "miner-004",
+      "preset": "B1",
+      "fireMode": "parallel",
+      "devices": { "A": "sw4-bot-a", "B": "sw4-bot-b" }
+    },
+    {
+      "id": "sw5",
+      "name": "Atomat 5",
+      "minerId": "miner-005",
+      "preset": "B2",
+      "fireMode": "sequential",
+      "devices": { "ON": "sw5-bot-on", "OFF": "sw5-bot-off" }
+    },
+    {
+      "id": "sw6",
+      "name": "Atomat 6",
+      "minerId": "miner-006",
+      "preset": "A",
+      "fireMode": "parallel",
+      "devices": { "A": "sw6-bot-a", "B": "sw6-bot-b" }
+    }
+  ]
+}

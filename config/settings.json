@@ -1,0 +1,9 @@
+{
+  "_comment": "Tham số vận hành — sửa qua dashboard hoặc trực tiếp. Giá trị mặc định CHỜ JAY/SẾP CHỐT.",
+  "switchOffCost": 100,
+  "switchOnCost": 60,
+  "confirmMinutes": 2,
+  "settlementPoint": "LZ_NORTH",
+  "delaySwitchMs": 2000,
+  "autoControl": false
+}
