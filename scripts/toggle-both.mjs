@@ -8,11 +8,11 @@
  * Yêu cầu: Node 18+ (có global fetch & crypto).
  *
  * Cách chạy (Western America data center):
- *   export TUYA_CLIENT_ID=cpwvjxe5njpg5dvenuwx
+ *   export TUYA_CLIENT_ID=<Client ID của bạn>             # lấy ở Overview của project
  *   export TUYA_CLIENT_SECRET=<Access Secret của bạn>      # lấy ở Overview của project
  *   export TUYA_BASE=https://openapi.tuyaus.com            # WA; EU: openapi.tuyaeu.com; SG: openapi.tuyasg.com
- *   export DEVICE_A=ebe0bai6ermgli9e
- *   export DEVICE_B=ebb4aa111bhzaaw1
+ *   export DEVICE_A=<device_id con A>
+ *   export DEVICE_B=<device_id con B>
  *
  *   node toggle-both.mjs false     # gửi switch=false cho cả 2 (mỗi lệnh = 1 lần đảo tay đòn)
  *   node toggle-both.mjs true      # gửi switch=true  cho cả 2
@@ -27,8 +27,8 @@ import crypto from 'node:crypto';
 const CLIENT_ID = process.env.TUYA_CLIENT_ID;
 const CLIENT_SECRET = process.env.TUYA_CLIENT_SECRET;
 const BASE = process.env.TUYA_BASE || 'https://openapi.tuyaus.com';
-const DEVICE_A = process.env.DEVICE_A || 'ebe0bai6ermgli9e';
-const DEVICE_B = process.env.DEVICE_B || 'ebb4aa111bhzaaw1';
+const DEVICE_A = process.env.DEVICE_A;
+const DEVICE_B = process.env.DEVICE_B;
 
 if (!CLIENT_ID || !CLIENT_SECRET) {
   console.error('Thiếu TUYA_CLIENT_ID hoặc TUYA_CLIENT_SECRET (export trước khi chạy).');
