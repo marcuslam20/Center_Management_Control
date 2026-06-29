@@ -1,6 +1,11 @@
 services:
   control-panel:
-    build: .
+    build:
+      context: .
+      args:
+        # false (mặc định) = image gọn ~300MB, dùng PRICE_SOURCE=ercot/mock.
+        # true = cài thêm Chromium+Xvfb cho fallback PRICE_SOURCE=ercot-browser (image ~1.8GB).
+        WITH_BROWSER: "false"
     image: osprey-control-panel:latest
     container_name: osprey-control-panel
     restart: unless-stopped

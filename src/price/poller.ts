@@ -7,6 +7,7 @@ import { log } from '../log/audit.js';
 import { store } from '../state/store.js';
 import { decisionEngine } from '../decision/engine.js';
 import { ErcotHtmlSource } from './ercot.js';
+import { ErcotBrowserSource } from './ercot-browser.js';
 import { MockPriceSource, type PricePoint, type PriceSource } from './source.js';
 
 class Poller {
@@ -14,10 +15,17 @@ class Poller {
   readonly mock: MockPriceSource;
   private timer: NodeJS.Timeout | null = null;
   private last: PricePoint | null = null;
+  private lastLoggedInterval: string | null = null; // chỉ log info khi sang mốc 15 phút mới
+  private hadError = false; // để log "khôi phục" sau chuỗi lỗi
 
   constructor() {
     this.mock = new MockPriceSource();
-    this.source = cfg.priceSource === 'ercot' ? new ErcotHtmlSource() : this.mock;
+    this.source =
+      cfg.priceSource === 'ercot'
+        ? new ErcotHtmlSource() // fetch thuần — chạy được nơi IP không bị Incapsula chặn (datacenter sạch/đã "ấm" nhờ truy cập browser)
+        : cfg.priceSource === 'ercot-browser'
+          ? new ErcotBrowserSource() // Chromium (Playwright) tự giải Incapsula JS challenge — dùng khi fetch thuần bị chặn
+          : this.mock;
     log.info('poller', `Nguồn giá: ${this.source.name} (poll mỗi ${cfg.pricePollSeconds}s)`);
   }
 
@@ -35,9 +43,17 @@ class Poller {
       const p = await this.source.getPrice(sp);
       this.last = p;
       decisionEngine.ingest(p);
+      // Log THÀNH CÔNG khi: sang mốc 15 phút mới, hoặc vừa khôi phục sau lỗi. (Tránh spam mỗi poll
+      // mà vẫn cho thấy hệ thống đang lấy được giá — trước đây poll thành công hoàn toàn im lặng.)
+      if (p.intervalEnding !== this.lastLoggedInterval || this.hadError) {
+        log.info('poller', `Giá ${p.settlementPoint} = $${p.price}/MWh @ ${p.intervalEnding} (${this.source.name})`);
+        this.lastLoggedInterval = p.intervalEnding;
+      }
+      this.hadError = false;
       return p;
     } catch (e) {
-      log.warn('poller', `Lấy giá thất bại (${this.source.name}): ${(e as Error).message}`);
+      this.hadError = true;
+      log.warn('poller', `Lấy giá thất bại (${this.source.name}) — giữ giá cũ: ${(e as Error).message}`);
       return this.last;
     }
   }

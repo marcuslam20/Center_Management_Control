@@ -61,8 +61,11 @@ export const cfg = {
   port: num('PORT', 8080),
 
   // Giá
-  priceSource: str('PRICE_SOURCE', 'mock'), // mock | ercot
+  priceSource: str('PRICE_SOURCE', 'mock'), // mock | ercot | ercot-browser
   pricePollSeconds: num('PRICE_POLL_SECONDS', 120),
+  // ercot-browser: true=headless (nhẹ, thường đủ ở IP sạch); false=headful dưới Xvfb (khó bị Incapsula
+  // phát hiện nhất — đổi sang false rồi restart nếu headless bị chặn, KHÔNG cần build lại image).
+  ercotBrowserHeadless: str('ERCOT_BROWSER_HEADLESS', 'true') !== 'false',
 
   // Thời gian thực thi
   primeWaitMs: num('PRIME_WAIT_MS', 6000),
