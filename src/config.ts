@@ -30,6 +30,15 @@ function loadDotEnv(): void {
 }
 loadDotEnv();
 
+// Thư mục dữ liệu runtime (state.json, audit.log) — TÁCH khỏi config/ (seed) để Docker mount
+// volume vào DATA_DIR mà không che mất file seed trong image. Override qua env DATA_DIR.
+export const DATA_DIR = process.env['DATA_DIR'] ? path.resolve(process.env['DATA_DIR']) : path.join(ROOT, 'data');
+try {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+} catch {
+  /* sẽ thử lại khi ghi file */
+}
+
 const str = (k: string, def = ''): string => process.env[k] ?? def;
 const num = (k: string, def: number): number => {
   const v = process.env[k];

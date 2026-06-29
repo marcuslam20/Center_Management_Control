@@ -5,7 +5,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { CONFIG_DIR } from '../config.js';
+import { CONFIG_DIR, DATA_DIR } from '../config.js';
 import { log } from '../log/audit.js';
 
 export interface Settings {
@@ -24,8 +24,8 @@ interface PersistedState {
   settings?: Partial<Settings>; // override runtime (ghi đè seed config/settings.json)
 }
 
-const SETTINGS_FILE = path.join(CONFIG_DIR, 'settings.json');
-const STATE_FILE = path.join(CONFIG_DIR, 'state.json');
+const SETTINGS_FILE = path.join(CONFIG_DIR, 'settings.json'); // seed chỉ-đọc (trong image)
+const STATE_FILE = path.join(DATA_DIR, 'state.json'); // runtime (mount volume)
 
 const DEFAULT_SETTINGS: Settings = {
   switchOffCost: 100,

@@ -4,7 +4,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { ROOT } from '../config.js';
+import { DATA_DIR } from '../config.js';
 
 export type AuditLevel = 'info' | 'action' | 'warn' | 'error';
 
@@ -16,7 +16,7 @@ export interface AuditEntry {
   data?: unknown;
 }
 
-const LOG_FILE = path.join(ROOT, 'audit.log');
+const LOG_FILE = path.join(DATA_DIR, 'audit.log');
 const MAX_BUFFER = 500;
 const buffer: AuditEntry[] = [];
 type Listener = (e: AuditEntry) => void;

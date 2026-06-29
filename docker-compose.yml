@@ -1,0 +1,20 @@
+services:
+  control-panel:
+    build: .
+    image: osprey-control-panel:latest
+    container_name: osprey-control-panel
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env                      # Tuya creds, CONTROL_MODE, PRICE_SOURCE... (KHÔNG bake vào image)
+    environment:
+      - PORT=8080
+      - DATA_DIR=/app/data
+    volumes:
+      - cp-data:/app/data         # giữ state.json + audit.log qua các lần rebuild
+      # (tuỳ chọn) chỉnh switches.json/settings.json từ host mà không rebuild:
+      # - ./config:/app/config
+
+volumes:
+  cp-data:
