@@ -79,13 +79,13 @@ export class DecisionEngine {
     if (changed && rec !== 'hold') {
       log.action(
         'decision',
-        `Khuyến nghị ${rec.toUpperCase()} — giá $${p.price}/MWh (off≥${switchOffCost}, on≤${switchOnCost}, ổn định ${confirmMinutes}p)`,
+        `Recommend ${rec.toUpperCase()} — price $${p.price}/MWh (off≥${switchOffCost}, on≤${switchOnCost}, stable ${confirmMinutes}m)`,
       );
       for (const fn of this.listeners) {
         try {
           fn(rec, p);
         } catch (e) {
-          log.error('decision', `Listener lỗi: ${(e as Error).message}`);
+          log.error('decision', `Listener error: ${(e as Error).message}`);
         }
       }
     }

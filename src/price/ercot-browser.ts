@@ -78,13 +78,13 @@ export class ErcotBrowserSource implements PriceSource {
       await page.waitForFunction(READY_EXPR, undefined, { timeout: NAV_TIMEOUT_MS });
       const html = await page.content();
       if (html.includes('_Incapsula_Resource') && !/Interval\s*Ending/i.test(html)) {
-        throw new Error('vẫn bị Incapsula chặn (có thể bị phát hiện headless — thử ERCOT_BROWSER_HEADLESS=false).');
+        throw new Error('still blocked by Incapsula (headless may be detected — try ERCOT_BROWSER_HEADLESS=false).');
       }
       return parseSppHtml(html, settlementPoint, this.name);
     } catch (e) {
       const diag = await this.snapshot(page);
       await this.close(); // reset để lần sau thử lại sạch (cookie/headless có thể đã hỏng)
-      throw new Error(`ERCOT (browser) lấy giá lỗi: ${(e as Error).message}${diag}`);
+      throw new Error(`ERCOT (browser) fetch error: ${(e as Error).message}${diag}`);
     } finally {
       try {
         await page.close();

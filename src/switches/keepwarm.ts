@@ -14,7 +14,7 @@ export function startKeepWarm(): void {
   if (timer || !isLive() || cfg.keepwarmSeconds <= 0) return;
   if (!tuya.hasCredentials()) return;
   const intervalMs = cfg.keepwarmSeconds * 1000;
-  log.info('keepwarm', `Bật keep-warm mỗi ${cfg.keepwarmSeconds}s`);
+  log.info('keepwarm', `Keep-warm enabled every ${cfg.keepwarmSeconds}s`);
 
   timer = setInterval(() => {
     void (async () => {
@@ -23,7 +23,7 @@ export function startKeepWarm(): void {
           const cur = await tuya.readSwitch(id);
           if (typeof cur === 'boolean') await tuya.sendSwitch(id, cur);
         } catch (e) {
-          log.warn('keepwarm', `Giữ ấm ${id} lỗi tạm thời: ${(e as Error).message}`);
+          log.warn('keepwarm', `Keep-warm ${id} transient error: ${(e as Error).message}`);
         }
       }
     })();

@@ -46,15 +46,15 @@ export class ErcotHtmlSource implements PriceSource {
     try {
       res = await fetch(url, { headers: BROWSER_HEADERS });
     } catch (e) {
-      throw new Error(`ERCOT fetch lỗi mạng: ${(e as Error).message}`);
+      throw new Error(`ERCOT fetch network error: ${(e as Error).message}`);
     }
     if (res.status === 403) {
-      throw new Error('ERCOT trả 403 (Incapsula bot-protection) — cần API chính thức hoặc proxy.');
+      throw new Error('ERCOT returned 403 (Incapsula bot-protection) — needs official API or proxy.');
     }
     if (!res.ok) throw new Error(`ERCOT HTTP ${res.status}`);
     const html = await res.text();
     if (html.includes('Incapsula') || html.includes('_Incapsula_Resource')) {
-      throw new Error('ERCOT trả trang chặn Incapsula — không phải dữ liệu giá.');
+      throw new Error('ERCOT returned an Incapsula block page — not price data.');
     }
     return parseSppHtml(html, settlementPoint, this.name);
   }
@@ -69,12 +69,12 @@ export class ErcotHtmlSource implements PriceSource {
 export function parseSppHtml(html: string, settlementPoint: string, sourceName = 'ercot'): PricePoint {
   const root = parse(html);
   const rows = root.querySelectorAll('table tr');
-  if (rows.length < 2) throw new Error('ERCOT: không tìm thấy bảng dữ liệu.');
+  if (rows.length < 2) throw new Error('ERCOT: data table not found.');
 
   const headerCells = (rows[0]?.querySelectorAll('th, td') ?? []).map((c) => c.text.trim());
   const colIndex = headerCells.findIndex((h) => h.toUpperCase() === settlementPoint.toUpperCase());
   if (colIndex === -1) {
-    throw new Error(`ERCOT: không thấy cột "${settlementPoint}". Cột có: ${headerCells.join(', ')}`);
+    throw new Error(`ERCOT: column "${settlementPoint}" not found. Available columns: ${headerCells.join(', ')}`);
   }
   const dayIdx = headerCells.findIndex((h) => /oper\s*day/i.test(h));
   const intervalIdx = headerCells.findIndex((h) => /interval\s*ending/i.test(h));
@@ -95,15 +95,15 @@ export function parseSppHtml(html: string, settlementPoint: string, sourceName =
       fetchedAt: new Date().toISOString(),
     };
   }
-  throw new Error(`ERCOT: cột "${settlementPoint}" không có giá trị số hợp lệ.`);
+  throw new Error(`ERCOT: column "${settlementPoint}" has no valid numeric value.`);
 }
 
 /** Tiện ích: thử fetch 1 lần để chẩn đoán (dùng trong test/CLI). */
 export async function probeErcot(settlementPoint: string): Promise<void> {
   try {
     const p = await new ErcotHtmlSource().getPrice(settlementPoint);
-    log.info('ercot', `Giá ${settlementPoint} = $${p.price}/MWh @ ${p.intervalEnding}`);
+    log.info('ercot', `Price ${settlementPoint} = $${p.price}/MWh @ ${p.intervalEnding}`);
   } catch (e) {
-    log.warn('ercot', `Probe thất bại: ${(e as Error).message}`);
+    log.warn('ercot', `Probe failed: ${(e as Error).message}`);
   }
 }

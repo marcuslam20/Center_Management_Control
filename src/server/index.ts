@@ -17,9 +17,9 @@ import { tuya } from '../tuya/client.js';
 import { buildServer } from './api.js';
 
 async function main(): Promise<void> {
-  log.info('boot', `Khởi động Control Panel — chế độ ${cfg.controlMode.toUpperCase()}`);
+  log.info('boot', `Starting Control Panel — mode ${cfg.controlMode.toUpperCase()}`);
   if (cfg.controlMode === 'live' && !tuya.hasCredentials()) {
-    log.warn('boot', 'CONTROL_MODE=live nhưng thiếu Tuya credentials — lệnh thật sẽ lỗi.');
+    log.warn('boot', 'CONTROL_MODE=live but Tuya credentials missing — real commands will fail.');
   }
 
   registry.load();
@@ -28,7 +28,7 @@ async function main(): Promise<void> {
   decisionEngine.onRecommendation((rec) => {
     if (rec === 'hold') return;
     if (!store.getSettings().autoControl) {
-      log.info('boot', `Bỏ qua khuyến nghị ${rec.toUpperCase()} (autoControl tắt — chờ manual).`);
+      log.info('boot', `Ignoring ${rec.toUpperCase()} recommendation (autoControl off — manual only).`);
       return;
     }
     void orchestrator.applyRecommendation(rec);
@@ -47,7 +47,7 @@ async function main(): Promise<void> {
   const webDist = path.join(ROOT, 'web', 'dist');
   if (fs.existsSync(webDist)) {
     await app.register(fastifyStatic, { root: webDist });
-    log.info('boot', 'Phục vụ dashboard từ web/dist');
+    log.info('boot', 'Serving dashboard from web/dist');
   } else {
     app.get('/', async () => ({
       ok: true,
@@ -56,10 +56,10 @@ async function main(): Promise<void> {
   }
 
   await app.listen({ port: cfg.port, host: '0.0.0.0' });
-  log.info('boot', `API listening trên http://localhost:${cfg.port}`);
+  log.info('boot', `API listening on http://localhost:${cfg.port}`);
 }
 
 main().catch((e: Error) => {
-  log.error('boot', `Khởi động lỗi: ${e.message}`, e.stack);
+  log.error('boot', `Startup error: ${e.message}`, e.stack);
   process.exit(1);
 });

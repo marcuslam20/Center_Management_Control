@@ -79,14 +79,14 @@ export async function buildServer(): Promise<FastifyInstance> {
   // ─── Điều khiển switch ─────────────────────────────────────────────────────
   app.post<{ Params: { id: string }; Body: { target: 'on' | 'off' } }>('/api/switch/:id', async (req, reply) => {
     const { target } = req.body ?? ({} as { target: 'on' | 'off' });
-    if (target !== 'on' && target !== 'off') return reply.code(400).send({ error: 'target phải là on|off' });
+    if (target !== 'on' && target !== 'off') return reply.code(400).send({ error: 'target must be on|off' });
     const result = await orchestrator.applySwitch(req.params.id, target).catch((e: Error) => ({ error: e.message }));
     return result;
   });
 
   app.post<{ Body: { target: 'on' | 'off' } }>('/api/all', async (req, reply) => {
     const { target } = req.body ?? ({} as { target: 'on' | 'off' });
-    if (target !== 'on' && target !== 'off') return reply.code(400).send({ error: 'target phải là on|off' });
+    if (target !== 'on' && target !== 'off') return reply.code(400).send({ error: 'target must be on|off' });
     return orchestrator.applyAll(target);
   });
 
@@ -102,10 +102,10 @@ export async function buildServer(): Promise<FastifyInstance> {
     if (!wasAuto && settings.autoControl) {
       const rec = decisionEngine.getState().recommendation;
       if (rec === 'on' || rec === 'off') {
-        log.action('api', `autoControl vừa bật → áp dụng ngay khuyến nghị hiện hành: ${rec.toUpperCase()}`);
+        log.action('api', `autoControl just enabled → applying current recommendation now: ${rec.toUpperCase()}`);
         void orchestrator.applyRecommendation(rec);
       } else {
-        log.info('api', 'autoControl vừa bật → khuyến nghị hiện là HOLD (chờ giá ổn định qua ngưỡng).');
+        log.info('api', 'autoControl just enabled → current recommendation is HOLD (waiting for price to stabilize past a threshold).');
       }
     }
     return settings;
@@ -134,7 +134,7 @@ export async function buildServer(): Promise<FastifyInstance> {
 
   // ─── Mock price control (chỉ khi nguồn giá = mock) — để demo decision engine ──
   app.post<{ Body: { price: number | null } }>('/api/mock/price', async (req, reply) => {
-    if (poller.sourceName() !== 'mock') return reply.code(400).send({ error: 'Nguồn giá không phải mock.' });
+    if (poller.sourceName() !== 'mock') return reply.code(400).send({ error: 'Price source is not mock.' });
     const price = req.body?.price ?? null;
     poller.mock.setOverride(price);
     const p = await poller.pollOnce();

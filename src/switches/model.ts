@@ -39,8 +39,8 @@ function resolveDeviceId(raw: string): string {
     const v = cfg.env[key];
     if (v) return v;
     // LIVE thì bắt buộc có id thật; DRY-RUN cho qua bằng placeholder để switch vẫn nạp được.
-    if (isLive()) throw new Error(`switches.json: device "${raw}" — biến môi trường ${key} chưa set.`);
-    log.warn('model', `Biến môi trường ${key} chưa set — dùng placeholder (dry-run).`);
+    if (isLive()) throw new Error(`switches.json: device "${raw}" — env var ${key} not set.`);
+    log.warn('model', `Env var ${key} not set — using placeholder (dry-run).`);
     return `missing:${key}`;
   }
   return raw;
@@ -55,7 +55,7 @@ function resolveDeviceId(raw: string): string {
 export function buildActions(preset: Preset, devices: Record<string, string>): { on: Command[]; off: Command[] } {
   const dev = (role: string): string => {
     const raw = devices[role];
-    if (!raw) throw new Error(`Preset ${preset} cần vai trò "${role}" nhưng switches.json không có.`);
+    if (!raw) throw new Error(`Preset ${preset} requires role "${role}" but switches.json is missing it.`);
     return resolveDeviceId(raw);
   };
 
@@ -76,7 +76,7 @@ export function buildActions(preset: Preset, devices: Record<string, string>): {
         off: [{ device: dev('OFF'), value: true }],
       };
     default:
-      throw new Error(`Preset không hợp lệ: ${preset as string}`);
+      throw new Error(`Invalid preset: ${preset as string}`);
   }
 }
 

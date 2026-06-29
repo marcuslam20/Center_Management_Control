@@ -38,14 +38,14 @@ class Orchestrator {
       this.busy = true;
       this.campaign = name;
       this.startedAt = new Date().toISOString();
-      log.action('orchestrator', `Bắt đầu: ${name}`);
+      log.action('orchestrator', `Started: ${name}`);
       try {
         return await fn();
       } finally {
         this.busy = false;
         this.campaign = null;
         this.startedAt = null;
-        log.info('orchestrator', `Hoàn tất: ${name}`);
+        log.info('orchestrator', `Completed: ${name}`);
       }
     });
     // Giữ chuỗi không vỡ khi 1 chiến dịch ném lỗi.
@@ -74,7 +74,7 @@ class Orchestrator {
   /** Manual override 1 switch (không qua hàng đợi chiến dịch lớn, nhưng vẫn tuần tự hoá). */
   applySwitch(id: string, target: Target): Promise<ApplyResult> {
     const sw = registry.get(id);
-    if (!sw) return Promise.reject(new Error(`Không có switch "${id}"`));
+    if (!sw) return Promise.reject(new Error(`No switch "${id}"`));
     return this.enqueue(`manual ${target.toUpperCase()} ${id}`, () =>
       target === 'off' ? this.offSwitch(sw) : this.onSwitch(sw),
     );
@@ -82,7 +82,7 @@ class Orchestrator {
 
   // ─── Toàn bộ (tuần tự từng switch) ─────────────────────────────────────────
   applyAll(target: Target): Promise<ApplyResult[]> {
-    return this.enqueue(`${target.toUpperCase()} tất cả (tuần tự)`, async () => {
+    return this.enqueue(`${target.toUpperCase()} all (sequential)`, async () => {
       const delay = store.getSettings().delaySwitchMs;
       const results: ApplyResult[] = [];
       const list = registry.all();
@@ -98,8 +98,8 @@ class Orchestrator {
   // ─── Khẩn cấp (curtailment) ────────────────────────────────────────────────
   /** Cắt tải khẩn: bỏ qua logic giá, fingerbot OFF SONG SONG tất cả switch (vẫn cố soft-off trước nếu có). */
   emergencyShutdown(): Promise<ApplyResult[]> {
-    return this.enqueue('KHẨN CẤP: cắt tải toàn bộ (song song)', async () => {
-      log.warn('orchestrator', '⚠️ CURTAILMENT — cắt tải khẩn, ưu tiên tuyệt đối.');
+    return this.enqueue('EMERGENCY: shut down all (parallel)', async () => {
+      log.warn('orchestrator', '⚠️ CURTAILMENT — emergency load shed, top priority.');
       const list = registry.all();
       // Soft-off song song trước (nhanh), rồi fingerbot OFF song song.
       await Promise.allSettled(
@@ -126,10 +126,10 @@ class Orchestrator {
   applyAllReconcile(target: Target): Promise<ApplyResult[]> {
     const pending = registry.all().filter((sw) => store.getDesired(sw.id) !== target);
     if (pending.length === 0) {
-      log.info('orchestrator', `Reconcile ${target.toUpperCase()}: tất cả switch đã đúng trạng thái — bỏ qua.`);
+      log.info('orchestrator', `Reconcile ${target.toUpperCase()}: all switches already in desired state — skipping.`);
       return Promise.resolve([]);
     }
-    return this.enqueue(`${target.toUpperCase()} reconcile ${pending.length} switch (tuần tự)`, async () => {
+    return this.enqueue(`${target.toUpperCase()} reconcile ${pending.length} switch(es) (sequential)`, async () => {
       const delay = store.getSettings().delaySwitchMs;
       const results: ApplyResult[] = [];
       for (let i = 0; i < pending.length; i++) {

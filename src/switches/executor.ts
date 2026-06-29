@@ -50,7 +50,7 @@ async function confirmSwitch(
 
 /** Đánh thức cả nhóm device (gửi mồi đúng giá trị đích) rồi chờ PRIME_WAIT_MS. */
 async function wakePrime(commands: Command[]): Promise<void> {
-  log.info('executor', `Wake-prime ${commands.length} device, chờ ${cfg.primeWaitMs}ms`);
+  log.info('executor', `Wake-prime ${commands.length} device(s), waiting ${cfg.primeWaitMs}ms`);
   await Promise.allSettled(commands.map((c) => tuya.sendSwitch(c.device, c.value)));
   await sleep(cfg.primeWaitMs);
 }

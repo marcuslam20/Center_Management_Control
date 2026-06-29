@@ -69,7 +69,7 @@ export class TuyaClient {
     const now = Date.now();
     if (!force && this.token && now < this.tokenExpiresAt - 60_000) return this.token;
     if (!this.hasCredentials()) {
-      throw new Error('Thiếu TUYA_CLIENT_ID / TUYA_CLIENT_SECRET — không lấy được token.');
+      throw new Error('Missing TUYA_CLIENT_ID / TUYA_CLIENT_SECRET — cannot obtain token.');
     }
     const path = '/v1.0/token?grant_type=1';
     const data = await this.request<{ access_token: string; expire_time: number }>({ method: 'GET', path });

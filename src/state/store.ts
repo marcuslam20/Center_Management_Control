@@ -42,7 +42,7 @@ function readJson<T>(file: string, fallback: T): T {
     const obj = JSON.parse(fs.readFileSync(file, 'utf8'));
     return obj as T;
   } catch (e) {
-    log.warn('store', `Đọc ${path.basename(file)} lỗi, dùng mặc định: ${(e as Error).message}`);
+    log.warn('store', `Read ${path.basename(file)} failed, using defaults: ${(e as Error).message}`);
     return fallback;
   }
 }
@@ -51,7 +51,7 @@ function writeJson(file: string, data: unknown): void {
   try {
     fs.writeFileSync(file, JSON.stringify(data, null, 2));
   } catch (e) {
-    log.error('store', `Ghi ${path.basename(file)} lỗi: ${(e as Error).message}`);
+    log.error('store', `Write ${path.basename(file)} failed: ${(e as Error).message}`);
   }
 }
 
@@ -80,7 +80,7 @@ class Store {
   updateSettings(patch: Partial<Settings>): Settings {
     this.settings = { ...this.settings, ...stripComment(patch) };
     this.persist();
-    log.info('store', 'Cập nhật settings', this.settings);
+    log.info('store', 'Settings updated', this.settings);
     return this.getSettings();
   }
 

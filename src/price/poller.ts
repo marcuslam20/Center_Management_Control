@@ -26,7 +26,7 @@ class Poller {
         : cfg.priceSource === 'ercot-browser'
           ? new ErcotBrowserSource() // Chromium (Playwright) tự giải Incapsula JS challenge — dùng khi fetch thuần bị chặn
           : this.mock;
-    log.info('poller', `Nguồn giá: ${this.source.name} (poll mỗi ${cfg.pricePollSeconds}s)`);
+    log.info('poller', `Price source: ${this.source.name} (poll every ${cfg.pricePollSeconds}s)`);
   }
 
   getLast(): PricePoint | null {
@@ -46,14 +46,14 @@ class Poller {
       // Log THÀNH CÔNG khi: sang mốc 15 phút mới, hoặc vừa khôi phục sau lỗi. (Tránh spam mỗi poll
       // mà vẫn cho thấy hệ thống đang lấy được giá — trước đây poll thành công hoàn toàn im lặng.)
       if (p.intervalEnding !== this.lastLoggedInterval || this.hadError) {
-        log.info('poller', `Giá ${p.settlementPoint} = $${p.price}/MWh @ ${p.intervalEnding} (${this.source.name})`);
+        log.info('poller', `Price ${p.settlementPoint} = $${p.price}/MWh @ ${p.intervalEnding} (${this.source.name})`);
         this.lastLoggedInterval = p.intervalEnding;
       }
       this.hadError = false;
       return p;
     } catch (e) {
       this.hadError = true;
-      log.warn('poller', `Lấy giá thất bại (${this.source.name}) — giữ giá cũ: ${(e as Error).message}`);
+      log.warn('poller', `Price fetch failed (${this.source.name}) — keeping last price: ${(e as Error).message}`);
       return this.last;
     }
   }

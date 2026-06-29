@@ -28,10 +28,10 @@ class Registry {
       try {
         this.switches.push(resolveSwitch(c));
       } catch (e) {
-        log.error('registry', `Switch "${c.id}" lỗi config: ${(e as Error).message}`);
+        log.error('registry', `Switch "${c.id}" config error: ${(e as Error).message}`);
       }
     }
-    log.info('registry', `Đã nạp ${this.switches.length} switch`, this.switches.map((s) => s.id));
+    log.info('registry', `Loaded ${this.switches.length} switch(es)`, this.switches.map((s) => s.id));
   }
 
   all(): SwitchDef[] {
@@ -59,7 +59,7 @@ class Registry {
         const s = await tuya.getFingerbotStatus(id);
         this.deviceStatus.set(id, s);
       } catch (e) {
-        log.warn('registry', `Đọc status ${id} lỗi: ${(e as Error).message}`);
+        log.warn('registry', `Read status ${id} failed: ${(e as Error).message}`);
       }
     }
   }
